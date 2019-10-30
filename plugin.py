@@ -80,3 +80,7 @@ class Plugin(PluginBase):
 
         self.listen_callback = None
         self.port = None
+
+    def send(self, addr, port, data):
+        self.listener.send(addr, port, data)
+

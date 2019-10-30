@@ -16,7 +16,9 @@ class UDPProtocol(DatagramProtocol):
         :param data: data to send
         :return:
         """
-        pass
+        # TODO - What is the max length of the message?
+        #        Doc mentions a MessageLengthError but give no limits
+        self.transport.write(data, (addr, port))
 
     def datagramReceived(self, data, sender):
         """

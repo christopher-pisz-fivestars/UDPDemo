@@ -49,46 +49,62 @@ class MainPanel(wx.Panel):
 
         # Read only Text Area
         self.textbox = wx.TextCtrl(self, style=wx.TE_MULTILINE | wx.TE_READONLY)
-        self.horizontal = wx.BoxSizer()
-        self.horizontal.Add(self.textbox, proportion=1, flag=wx.EXPAND)
+        self.horizontal_text = wx.BoxSizer()
+        self.horizontal_text.Add(self.textbox, proportion=1, flag=wx.EXPAND)
 
-        # Buttons
-        self.button_task_event_loop = wx.Button(self, label="Start task - event loop")
+        # Main Input controls
+        self.listen_port_label = wx.StaticText(self, label="Listen Port")
+        self.listen_port_text = wx.TextCtrl(self, size=(50, -1), value="5000")
         self.button_open = wx.Button(self, label="Open")
         self.button_listen = wx.Button(self, label="Listen")
-        self.horizontal2 = wx.BoxSizer()
-        self.horizontal2.Add(self.button_task_event_loop, 0, wx.RIGHT, 5)
-        self.horizontal2.Add(self.button_open, 0, wx.RIGHT, 5)
-        self.horizontal2.Add(self.button_listen, 0, wx.RIGHT, 5)
+        self.subhorizontal_inputs1 = wx.BoxSizer()
+        self.subhorizontal_inputs1.Add(self.listen_port_label, 0, wx.RIGHT, 5)
+        self.subhorizontal_inputs1.Add(self.listen_port_text, 0, wx.RIGHT, 205)
+        self.subhorizontal_inputs1.Add(self.button_open, 0, wx.RIGHT, 5)
+        self.subhorizontal_inputs1.Add(self.button_listen, 0, wx.RIGHT, 5)
 
-        # Input controls
-        self.listen_port_label = wx.StaticText(self, label="Listen Port")
-        self.listen_port_text = wx.TextCtrl(self, size=(50, -1))
-        self.horizontal3 = wx.BoxSizer()
-        self.horizontal3.Add(self.listen_port_label, 0, wx.RIGHT, 5)
-        self.horizontal3.Add(self.listen_port_text, 0, 0, 0)
+        self.destination_ip_label = wx.StaticText(self, label="Destination IP")
+        self.destination_ip_text = wx.TextCtrl(self, size=(150, -1), value="127.0.0.1")
+        self.destination_port_label = wx.StaticText(self, label="Port")
+        self.destination_port_text = wx.TextCtrl(self, size=(50, -1), value="5000")
+        self.subhorizontal_inputs2 = wx.BoxSizer()
+        self.subhorizontal_inputs2.Add(self.destination_ip_label, 0, wx.RIGHT, 5)
+        self.subhorizontal_inputs2.Add(self.destination_ip_text, 0, wx.RIGHT, 5)
+        self.subhorizontal_inputs2.Add(self.destination_port_label, 0, wx.RIGHT, 5)
+        self.subhorizontal_inputs2.Add(self.destination_port_text, 0, wx.RIGHT, 5)
 
         self.message_label = wx.StaticText(self, label="Message")
-        self.message_text = wx.TextCtrl(self, size=(250, -1))
-        self.horizontal4 = wx.BoxSizer()
-        self.horizontal4.Add(self.message_label, 0, wx.RIGHT, 15)
-        self.horizontal4.Add(self.message_text, 0, 0, 5)
+        self.message_text = wx.TextCtrl(self, size=(250, -1), value="Lorem ipsum dolor sit amet")
+        self.button_send = wx.Button(self, label="Send")
+        self.subhorizontal_inputs3 = wx.BoxSizer()
+        self.subhorizontal_inputs3.Add(self.message_label, 0, wx.RIGHT, 15)
+        self.subhorizontal_inputs3.Add(self.message_text, 0, wx.RIGHT, 5)
+        self.subhorizontal_inputs3.Add(self.button_send, 0, wx.RIGHT, 5)
 
         self.vertical_input_controls = wx.BoxSizer(wx.VERTICAL)
-        self.vertical_input_controls.Add(self.horizontal3, 0, wx.BOTTOM, 5)
-        self.vertical_input_controls.Add(self.horizontal4, 0, 0, 0)
+        self.vertical_input_controls.Add(self.subhorizontal_inputs1, 0, wx.BOTTOM, 15)
+        self.vertical_input_controls.Add(self.subhorizontal_inputs2, 0, wx.BOTTOM, 5)
+        self.vertical_input_controls.Add(self.subhorizontal_inputs3, 0, wx.BOTTOM, 5)
+
+        self.button_task_event_loop = wx.Button(self, label="Start task - event loop")
+        self.vertical_extras = wx.BoxSizer(wx.VERTICAL)
+        self.vertical_extras.Add(self.button_task_event_loop, 0, wx.ALIGN_RIGHT)
+
+        self.horizontal_input_controls = wx.BoxSizer()
+        self.horizontal_input_controls.Add(self.vertical_input_controls, 2, 0, 0)
+        self.horizontal_input_controls.Add(self.vertical_extras, 1, 0, 0)
 
         # Main box
-        self.sizer_vertical_main = wx.BoxSizer(wx.VERTICAL)
-        self.sizer_vertical_main.Add(self.horizontal, 2, wx.EXPAND, 0)
-        self.sizer_vertical_main.Add(self.horizontal2, 0, wx.ALIGN_CENTER, 0)
-        self.sizer_vertical_main.Add(self.vertical_input_controls, 1, 0, 0)
-        self.SetSizerAndFit(self.sizer_vertical_main)
+        self.vertical_main = wx.BoxSizer(wx.VERTICAL)
+        self.vertical_main.Add(self.horizontal_text, 2, wx.EXPAND | wx.BOTTOM, 10)
+        self.vertical_main.Add(self.horizontal_input_controls, 1, wx.LEFT, 10)
+        self.SetSizerAndFit(self.vertical_main)
 
         # Binds and inits
         self.Bind(wx.EVT_BUTTON, self.on_click_button_task_event_loop, self.button_task_event_loop)
         self.Bind(wx.EVT_BUTTON, self.on_click_button_open, self.button_open)
         self.Bind(wx.EVT_BUTTON, self.on_click_button_listen, self.button_listen)
+        self.Bind(wx.EVT_BUTTON, self.on_click_button_send, self.button_send)
         self.button_listen.Disable()
         self.textbox.AppendText('Panel created on thread: {}\n'.format(
             threading.current_thread().ident))
@@ -115,7 +131,7 @@ class MainPanel(wx.Panel):
         try:
             port = int(port)
         except ValueError:
-            self.textbox.AppendText('Port was not a valid value. Try again.\n')
+            self.textbox.AppendText('Listen port was not a valid value. Try again.\n')
             self.listen_port_text.SetValue("")
             self.button_open.Enable()
             return
@@ -127,12 +143,30 @@ class MainPanel(wx.Panel):
             self.udp_plugin.listen(self.on_message_received)
             self.listening = True
             self.button_listen.Label = "Stop Listening"
+            self.textbox.AppendText('Registered receive callback.\n')
         else:
             self.udp_plugin.stop_listening()
             self.listening = False
             self.button_open.Enable()
             self.button_listen.Label = "Listen"
             self.button_listen.Disable()
+            self.textbox.AppendText(
+                'Closed Listener, unregistered callback, and set port to None.\n')
+
+    def on_click_button_send(self, event):
+        message = self.message_text.GetValue()
+        address = self.destination_ip_text.GetValue()
+
+        port = self.destination_port_text.GetValue()
+        try:
+            port = int(port)
+        except ValueError:
+            self.textbox.AppendText('Destination port was not a valid value. Try again.\n')
+            self.listen_port_text.SetValue("")
+            self.button_open.Enable()
+            return
+
+        self.udp_plugin.send(address, port, message)
 
     def long_task_event_loop(self):
         if self.doing_task_event_loop:
