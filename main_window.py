@@ -5,6 +5,7 @@ import wx
 
 from plugin import Plugin
 
+
 class MainWindow(wx.Frame):
     def __init__(self, parent, title):
         wx.Frame.__init__(self, parent, title=title, size=(800, 600))
@@ -42,7 +43,7 @@ class MainPanel(wx.Panel):
     def __init__(self, parent):
         self.doing_task_event_loop = False
         self.doing_task_callback = False
-        self.called_back_count = 0
+        self.listening = False
 
         wx.Panel.__init__(self, parent)
 
@@ -87,6 +88,7 @@ class MainPanel(wx.Panel):
         # Binds and inits
         self.Bind(wx.EVT_BUTTON, self.on_click_button_task_event_loop, self.button_task_event_loop)
         self.Bind(wx.EVT_BUTTON, self.on_click_button_open, self.button_open)
+        self.Bind(wx.EVT_BUTTON, self.on_click_button_listen, self.button_listen)
         self.button_listen.Disable()
         self.textbox.AppendText('Panel created on thread: {}\n'.format(
             threading.current_thread().ident))
@@ -113,11 +115,24 @@ class MainPanel(wx.Panel):
         try:
             port = int(port)
         except ValueError:
-            # TODO - Reset the text and message
-            pass
+            self.textbox.AppendText('Port was not a valid value. Try again.\n')
+            self.listen_port_text.SetValue("")
+            self.button_open.Enable()
+            return
 
         self.udp_plugin.open(port, False, self.on_open, self.on_open_error)
-        self.udp_plugin.listen("poop")
+
+    def on_click_button_listen(self, event):
+        if not self.listening:
+            self.udp_plugin.listen(self.on_message_received)
+            self.listening = True
+            self.button_listen.Label = "Stop Listening"
+        else:
+            self.udp_plugin.stop_listening()
+            self.listening = False
+            self.button_open.Enable()
+            self.button_listen.Label = "Listen"
+            self.button_listen.Disable()
 
     def long_task_event_loop(self):
         if self.doing_task_event_loop:
@@ -132,3 +147,6 @@ class MainPanel(wx.Panel):
 
     def on_open_error(self, error_json):
         self.textbox.AppendText('Open failed:%s\n' % json.dumps(error_json))
+
+    def on_message_received(self, message):
+        self.textbox.AppendText('a message was received\n')

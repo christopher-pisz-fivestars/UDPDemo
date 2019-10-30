@@ -69,3 +69,14 @@ class Plugin(PluginBase):
         """
         self.listen_callback = callback
 
+    def stop_listening(self):
+        """
+        Stop listening for incoming messages and reset to a state as though we were just initialized
+        :return:
+        """
+        if self.listener is not None:
+            self.listener.stopListening()
+            self.listener = None
+
+        self.listen_callback = None
+        self.port = None
