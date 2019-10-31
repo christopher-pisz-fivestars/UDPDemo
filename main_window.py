@@ -182,5 +182,5 @@ class MainPanel(wx.Panel):
     def on_open_error(self, error_json):
         self.textbox.AppendText('Open failed:%s\n' % json.dumps(error_json))
 
-    def on_message_received(self, message):
-        self.textbox.AppendText('a message was received\n')
+    def on_message_received(self, udp_event):
+        self.textbox.AppendText('a message was received:\n%s' % format(json.dumps(udp_event)))

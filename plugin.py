@@ -23,6 +23,7 @@ class Plugin(PluginBase):
         self.port = None
         self.listener = None
         self.listen_callback = None
+        self.protocol = UDPProtocol(self.on_data_received)
 
     def configure(self, config):
         pass
@@ -55,7 +56,7 @@ class Plugin(PluginBase):
 
         # Start listening
         try:
-            self.listener = reactor.listenUDP(self.port, UDPProtocol())
+            self.listener = reactor.listenUDP(self.port, self.protocol)
             callback()
         except CannotListenError as err:
             error_json = {"error": err[2].strerror}
@@ -82,5 +83,13 @@ class Plugin(PluginBase):
         self.port = None
 
     def send(self, addr, port, data):
-        self.listener.send(addr, port, data)
+        self.protocol.send(addr, port, data)
+
+    def on_data_received(self, data, sender):
+        udp_event = {
+            "address": sender[0],
+            "message": data,
+            "port": sender[1]
+        }
+        self.listen_callback(udp_event)
 
