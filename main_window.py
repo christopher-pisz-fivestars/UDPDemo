@@ -166,7 +166,7 @@ class MainPanel(wx.Panel):
             self.button_open.Enable()
             return
 
-        self.udp_plugin.send(address, port, message)
+        self.udp_plugin.send(message, address, port, self.on_send, self.on_send_error)
 
     def long_task_event_loop(self):
         if self.doing_task_event_loop:
@@ -184,3 +184,13 @@ class MainPanel(wx.Panel):
 
     def on_message_received(self, udp_event):
         self.textbox.AppendText('a message was received:\n%s' % format(json.dumps(udp_event)))
+
+    def on_listen_error(self, error_json):
+        self.textbox.AppendText('Listen failed:%s\n' % json.dumps(error_json))
+
+    def on_send(self):
+        self.textbox.AppendText('Send was successful\n')
+
+    def on_send_error(self, error_json):
+        self.textbox.AppendText('Send failed:%s\n' % json.dumps(error_json))
+
