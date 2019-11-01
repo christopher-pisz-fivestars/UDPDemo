@@ -52,6 +52,7 @@ class Plugin(PluginBase):
 
     def open(self, port, is_broadcast, callback, errback=None):
         """
+        Binds to a local socket and begins listening
         :param port: Port to listen on
         :param isBroadcast: Whether or not we will be listening for broadcast messages
         :param callback - Called when listener was created successfully
@@ -86,6 +87,7 @@ class Plugin(PluginBase):
 
     def listen(self, callback, errback=None):
         """
+        Registers a callback for received messages
         :param callback - Called when there is a message received
         :param errback - Called when registration of the callback failed
         :return: None
