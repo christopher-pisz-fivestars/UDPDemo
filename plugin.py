@@ -1,3 +1,4 @@
+import socket  # For exception types
 import sys
 from enum import Enum
 from twisted.internet.error import CannotListenError
@@ -49,11 +50,10 @@ class Plugin(PluginBase):
         pass
 #endregion
 
-    def open(self, port, isBroadcast, callback, errback=None):
+    def open(self, port, is_broadcast, callback, errback=None):
         """
         :param port: Port to listen on
-        :param isBroadcast: TODO - Not sure what to do with this. are we are listening to broadcasts
-                                   or sending them?
+        :param isBroadcast: Whether or not we will be listening for broadcast messages
         :param callback - Called when listener was created successfully
         :param errback - Called when listener creation failed
         :return: None
@@ -64,6 +64,8 @@ class Plugin(PluginBase):
 
         error_json = None
         try:
+            self.protocol.allow_broadcast = is_broadcast
+
             from twisted.internet import reactor
             self.listener = reactor.listenUDP(self.port, self.protocol)
             self.state = self.State.LISTENING
@@ -72,6 +74,9 @@ class Plugin(PluginBase):
             error_json = {"error": err[2].strerror}
         except RuntimeError as err:
             error_json = {"error": err.args[0]}
+        except socket.error as err:
+            error_json = {
+                "error": "%s" % format(err.strerror)}
         except:
             error_json = {
                 "error": "An unknown exception type was caught: %s" % format(sys.exc_info()[0])}
@@ -94,6 +99,9 @@ class Plugin(PluginBase):
             self.state = self.State.RECV_CALLBACK_REGISTERED
         except RuntimeError as err:
             error_json = {"error": err.args[0]}
+        except socket.error as err:
+            error_json = {
+                "error": "%s" % format(err.strerror)}
         except:
             error_json = {
                 "error": "An unknown exception type was caught: %s" % format(sys.exc_info()[0])}
@@ -138,13 +146,15 @@ class Plugin(PluginBase):
             callback()
         except RuntimeError as err:
             error_json = {"error": err.args[0]}
+        except socket.error as err:
+            error_json = {
+                "error": "%s" % format(err.strerror)}
         except:
             error_json = {
                 "error": "An unknown exception type was caught: %s" % format(sys.exc_info()[0])}
         finally:
             if error_json is not None and errback is not None:
                 errback(error_json)
-
 
     def on_data_received(self, data, sender):
         udp_event = {

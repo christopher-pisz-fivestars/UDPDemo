@@ -55,11 +55,13 @@ class MainPanel(wx.Panel):
         # Main Input controls
         self.listen_port_label = wx.StaticText(self, label="Listen Port")
         self.listen_port_text = wx.TextCtrl(self, size=(50, -1), value="5000")
+        self.broadcast_checkbox = wx.CheckBox(self, label="Allow Broadcast")
         self.button_open = wx.Button(self, label="Open")
         self.button_listen = wx.Button(self, label="Listen")
         self.subhorizontal_inputs1 = wx.BoxSizer()
         self.subhorizontal_inputs1.Add(self.listen_port_label, 0, wx.RIGHT, 5)
-        self.subhorizontal_inputs1.Add(self.listen_port_text, 0, wx.RIGHT, 205)
+        self.subhorizontal_inputs1.Add(self.listen_port_text, 0, wx.RIGHT, 5)
+        self.subhorizontal_inputs1.Add(self.broadcast_checkbox, 0, wx.RIGHT, 92)
         self.subhorizontal_inputs1.Add(self.button_open, 0, wx.RIGHT, 5)
         self.subhorizontal_inputs1.Add(self.button_listen, 0, wx.RIGHT, 5)
 
@@ -136,7 +138,9 @@ class MainPanel(wx.Panel):
             self.button_open.Enable()
             return
 
-        self.udp_plugin.open(port, False, self.on_open, self.on_open_error)
+        self.udp_plugin.open(port, self.broadcast_checkbox.GetValue(), self.on_open,
+                             self.on_open_error)
+        self.broadcast_checkbox.Disable()
 
     def on_click_button_listen(self, event):
         if not self.listening:
@@ -150,6 +154,7 @@ class MainPanel(wx.Panel):
             self.button_open.Enable()
             self.button_listen.Label = "Listen"
             self.button_listen.Disable()
+            self.broadcast_checkbox.Enable()
             self.textbox.AppendText(
                 'Closed Listener, unregistered callback, and set port to None.\n')
 
